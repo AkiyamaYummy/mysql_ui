@@ -25,8 +25,14 @@ QString mysql_exe::login(QString hostname,\
         return errmes;
     }else{
         _hadLogin = 1;
-        return message_strs::LOGIN_SUCCESS;
+        return LOGIN_SUCCESS;
     }
+}
+void mysql_exe::use(QString dbName){
+    if(!_hadLogin)return;
+    single.close();
+    single.setDatabaseName(dbName);
+    single.open();
 }
 //warning
 void mysql_exe::close(){

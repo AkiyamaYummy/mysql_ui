@@ -1,5 +1,16 @@
 #include "display_ui.h"
 
+/*
+    // release outside
+    QString **displayStrs,*titles;
+    // release inside
+    ExQLabel **labels;
+    QVBoxLayout *mainLayout;
+    QHBoxLayout *pageNumLayout;
+    QSignalMapper *mainMapper,*pageMapper;
+    QVector<QWidget*> toDelete;
+*/
+
 display_ui::display_ui(int r,int c,int *wids,int h,QString *tit){
     ITEM_COUNT = 0; displayStrs = 0;
     MAX_PAGE = 6; BEST_RANK = 3;
@@ -22,11 +33,9 @@ display_ui::display_ui(int r,int c,int *wids,int h,QString *tit){
     display();
 }
 display_ui::~display_ui(){
-    setDisplay(0,0,1);
-    if(mainLayout){
-        mainLayout->deleteLater();
-        mainLayout = 0;
-    }
+    clearMainLayout();
+    mainLayout->deleteLater();
+    mainLayout = 0;
     if(mainMapper){
         mainMapper->deleteLater();
         mainMapper = 0;
@@ -40,8 +49,10 @@ display_ui::~display_ui(){
 QVBoxLayout *display_ui::getLabelsLayout(){
     QVBoxLayout *res = new QVBoxLayout();
     QHBoxLayout *row;
+
     if(mainMapper)mainMapper->deleteLater();
     mainMapper = new QSignalMapper(this);
+
     labels = new ExQLabel*[ROW_COUNT+1];
     for(int i=0;i<=ROW_COUNT;i++){
         labels[i] = new ExQLabel[COL_COUNT];
@@ -57,10 +68,6 @@ QVBoxLayout *display_ui::getLabelsLayout(){
                 mainMapper->setMapping(&labels[i][j],i);
                 connect(&labels[i][j],SIGNAL(clicked())
                         ,mainMapper,SLOT(map()));
-            }else{
-                QFont f; f.setItalic(true);
-                f.setPointSize(12);
-                labels[i][j].setFont(f);
             }
         }
         res->addLayout(row);
@@ -69,19 +76,29 @@ QVBoxLayout *display_ui::getLabelsLayout(){
             ,this,SLOT(rowClickedSlot(int)));
     return res;
 }
+void display_ui::clearMainLayout(){
+    for(int i=0;i<ROW_COUNT;i++)delete[] labels[i];
+    delete[] labels;
+    clearPageNumLayouyt();
+    pageNumLayout->deleteLater();
+    pageNumLayout = 0;
+    while(mainLayout->count())
+        delete mainLayout->takeAt(0);
+}
 //displayBlockSet.
 void display_ui::display(int page){
     pageNumDisplay(page);
     for(int i=0;i<ROW_COUNT;i++){
         int r = (pageNow-1)*ROW_COUNT+i;
-        if(r == ITEM_COUNT){
+        if(r >= ITEM_COUNT){
             for(int j=i;j<ROW_COUNT;j++)
                 for(int k=0;k<COL_COUNT;k++)
                     labels[j+1][k].setText("");
             break;
         }
-        for(int j=0;j<COL_COUNT;j++)
+        for(int j=0;j<COL_COUNT;j++){
             labels[i+1][j].setText(displayStrs[r][j]);
+        }
     }
 }
 void display_ui::setDisplay(QString **dis,int itemCon,bool memoryReleaseFlag){
@@ -98,6 +115,10 @@ void display_ui::setDisplay(QString **dis,int itemCon,bool memoryReleaseFlag){
 }
 //pageNumSet.
 void display_ui::pageNumDisplay(int page){
+    clearPageNumLayouyt();
+    setPageNumLayout(page);
+}
+void display_ui::clearPageNumLayouyt(){
     for(int i=0;i<toDelete.size();i++){
         delete toDelete[i];
         toDelete[i] = 0;
@@ -105,7 +126,6 @@ void display_ui::pageNumDisplay(int page){
     toDelete.clear();
     while(pageNumLayout->count())
         delete pageNumLayout->takeAt(0);
-    setPageNumLayout(page);
 }
 void display_ui::setPageNumLayout(int page){
     int tot = ITEM_COUNT/ROW_COUNT+(ITEM_COUNT%ROW_COUNT?1:0);
@@ -121,8 +141,10 @@ void display_ui::setPageNumLayout(int page){
         else if(sta < 1)sta = 1;
         end = sta+MAX_PAGE-1;
     }
+
     if(pageMapper)pageMapper->deleteLater();
     pageMapper = new QSignalMapper();
+
     pageNumLayout->addStretch();
     pageNumLayout->addWidget(getPageNumButton(1,pageMapper,"first"));
     pageNumLayout->addWidget(getPageNumButton
@@ -157,12 +179,15 @@ void display_ui::setPageButton(int w,int b){
     LETTER_WIDTH = w; PAGE_BUTTON_BLOCK = b;
 }
 //Border
-void display_ui::setBorder(int m,int e,QString c){
+void display_ui::addBorder(int m,int e,QString c){
     MID_BORDER = m; EDGE_BORDER = e;
     BORDER_COLOR = c;
     for(int i=0;i<=ROW_COUNT;i++)
-        for(int j=0;j<COL_COUNT;j++)
-            labels[i][j].setStyleSheet(getBorderStr(i,j));
+        for(int j=0;j<COL_COUNT;j++){
+            QString ss(labels[i][j].styleSheet());
+            ss.append(getBorderStr(i,j));
+            labels[i][j].setStyleSheet(ss);
+        }
 }
 QString display_ui::getBorderStr(int x,int y){
     int l,r,t,b;
@@ -171,7 +196,7 @@ QString display_ui::getBorderStr(int x,int y){
     if(y == 0)l = EDGE_BORDER;
     if(x == ROW_COUNT)b = EDGE_BORDER;
     if(y == COL_COUNT-1)r = EDGE_BORDER;
-    QString res("QLabel{");
+    QString res;
     res.append(QString("border-top : %1px solid %2;")
                .arg(t).arg(BORDER_COLOR));
     res.append(QString("border-bottom : %1px solid %2;")
@@ -180,13 +205,41 @@ QString display_ui::getBorderStr(int x,int y){
                .arg(l).arg(BORDER_COLOR));
     res.append(QString("border-right : %1px solid %2;")
                .arg(r).arg(BORDER_COLOR));
-    res.append("}");
     return res;
 }
+void display_ui::setRowFont(int r,QFont &f){
+    for(int c=0;c<COL_COUNT;c++){
+        labels[r][c].setFont(f);
+    }
+}
+void display_ui::setColFont(int c,QFont &f){
+    for(int r=0;r<=ROW_COUNT;r++){
+        labels[r][c].setFont(f);
+    }
+}
+void display_ui::setRowBackground(int r,QString color){
+    for(int c=0;c<COL_COUNT;c++){
+        QString ss = labels[r][c].styleSheet();
+        ss.append(QString("background-color: %1 ;").arg(color));
+        labels[r][c].setStyleSheet(ss);
+    }
+}
+void display_ui::setColBackground(int c,QString color){
+    for(int r=0;r<ROW_COUNT;r++){
+        QString ss = labels[r][c].styleSheet();
+        ss.append(QString("background-color: %1 ;").arg(color));
+        labels[r][c].setStyleSheet(ss);
+    }
+}
 void display_ui::rowClickedSlot(int _r){
-    /***********************************/
-    qDebug() << _r;
+    this->rowClicked(_r);
+}
+void display_ui::rowClicked(int _r){
+    qDebug() << "dis " << _r;
 }
 void display_ui::displaySlot(int page){
     display(page);
+}
+int display_ui::getCol(){
+    return COL_COUNT;
 }

@@ -11,11 +11,18 @@
 #include <QSizePolicy>
 #include <exception>
 
-#include "src/Ui/message_strs.h"
 #include "src/MysqlExe/mysql_exe.h"
 
 class login_ui :public QDialog{
     Q_OBJECT
+public:
+    const static QString LOGIN_SUCCESS;
+    const static QString LOGIN_WAITING;
+    const static QString LOGIN_TITLE;
+    const static QString LOGIN_HOSTNAME_TEXTLINE;
+    const static QString LOGIN_USERNAME_TEXTLINE;
+    const static QString LOGIN_PASSWORD_TEXTLINE;
+    const static QString LOGIN_LOGIN_BUTTON;
 private:
     QLabel *label1,*label2,*label3,*label4;
     QLineEdit *hostNameEdit,*userNameEdit,*passwordEdit;

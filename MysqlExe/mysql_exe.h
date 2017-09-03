@@ -3,9 +3,9 @@
 
 #include <QtSql>
 
-#include "src/Ui/message_strs.h"
-
 class mysql_exe{
+public:
+    const static QString LOGIN_SUCCESS;
 private:
     QSqlDatabase single;
     bool _hadLogin;
@@ -16,6 +16,7 @@ public:
     QString login(QString a,QString b,QString c);
     void close();
     bool getHadLogin();
+    void use(QString dbName);
 };
 
 #endif // MYSQL_EXE_H

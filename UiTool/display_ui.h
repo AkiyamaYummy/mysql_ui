@@ -19,7 +19,7 @@ Temporary version, read all the items at once.
 */
 class display_ui :public QWidget{
     Q_OBJECT
-private:
+protected:
     int ROW_COUNT,COL_COUNT,*SUB_WIDTHS,ROW_HEIGHT;
     int ITEM_COUNT;
     int MID_BORDER,EDGE_BORDER;
@@ -27,13 +27,15 @@ private:
     int LETTER_WIDTH,PAGE_BUTTON_BLOCK;
     QString BORDER_COLOR;
     int pageNow;
-    ExQLabel **labels;
+    bool _hasPageNum;
+    // release outside
     QString **displayStrs,*titles;
+    // release inside
+    ExQLabel **labels;
     QVBoxLayout *mainLayout;
     QHBoxLayout *pageNumLayout;
     QSignalMapper *mainMapper,*pageMapper;
     QVector<QWidget*> toDelete;
-    bool _hasPageNum;
 public:
     display_ui(int r,int c,int *wids,int h,QString *tit);
     ~display_ui();
@@ -50,8 +52,16 @@ public:
     void setPageNum(int m,int b);
     void setPageButton(int w,int b);
     //Border
-    void setBorder(int m,int e,QString c);
+    void addBorder(int m=1,int e=3,QString c="#696969");
     QString getBorderStr(int x,int y);
+    void clearPageNumLayouyt();
+    void clearMainLayout();
+    int getCol();
+    void setRowFont(int r,QFont &f);
+    void setColFont(int c,QFont &f);
+    void setRowBackground(int r, QString color);
+    void setColBackground(int c, QString color);
+    virtual void rowClicked(int _r);
 public slots:
     void rowClickedSlot(int _r);
     void displaySlot(int page);

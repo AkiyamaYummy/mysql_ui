@@ -5,11 +5,11 @@ login_ui::login_ui(mysql_exe *sql,QWidget *father):QDialog(father){
 
     mainLayout = new QVBoxLayout();
     mainLayout->addLayout(getSubLayout(label1,hostNameEdit,\
-        message_strs::LOGIN_HOSTNAME_TEXTLINE));
+        LOGIN_HOSTNAME_TEXTLINE));
     mainLayout->addLayout(getSubLayout(label2,userNameEdit,\
-        message_strs::LOGIN_USERNAME_TEXTLINE));
+        LOGIN_USERNAME_TEXTLINE));
     mainLayout->addLayout(getSubLayout(label3,passwordEdit,\
-        message_strs::LOGIN_PASSWORD_TEXTLINE));
+        LOGIN_PASSWORD_TEXTLINE));
     passwordEdit->setEchoMode(QLineEdit::Password);
     loginButton = getLoginButton();
     mainLayout->addWidget(loginButton);
@@ -19,7 +19,7 @@ login_ui::login_ui(mysql_exe *sql,QWidget *father):QDialog(father){
     QDialog();
     setFixedSize(MAIN_WIDTH,MAIN_HEIGHT);
     setLayout(mainLayout);
-    setWindowTitle(message_strs::LOGIN_TITLE);
+    setWindowTitle(LOGIN_TITLE);
     setFixedWidth(MAIN_WIDTH);
 
     slotConnectInit();
@@ -38,7 +38,7 @@ QHBoxLayout *login_ui::getSubLayout(QLabel *&label,\
 }
 QPushButton *login_ui::getLoginButton(){
     QPushButton *res = new QPushButton(this);
-    res->setText(message_strs::LOGIN_LOGIN_BUTTON);
+    res->setText(LOGIN_LOGIN_BUTTON);
     res->setFixedHeight(ROW_HEIGHT);
     return res;
 }
@@ -56,7 +56,7 @@ void login_ui::slotConnectInit(){
             this,SLOT(pressLoginButton()));
 }
 void login_ui::pressLoginButton(){
-    label4->setText(message_strs::LOGIN_WAITING);
+    label4->setText(LOGIN_WAITING);
     repaint();
     QString s1 = hostNameEdit->text();
     QString s2 = userNameEdit->text();
