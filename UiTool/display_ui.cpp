@@ -11,7 +11,25 @@
     QVector<QWidget*> toDelete;
 */
 
-display_ui::display_ui(int r,int c,int *wids,int h,QString *tit){
+display_ui::display_ui(){
+    ITEM_COUNT = 0; displayStrs = 0;
+    MAX_PAGE = 6; BEST_RANK = 3;
+    LETTER_WIDTH = 7; PAGE_BUTTON_BLOCK = 4;
+    _hasPageNum = 0;
+    mainMapper = pageMapper = 0;
+    displayStrs = 0;
+    ROW_COUNT = 0; COL_COUNT = 0;
+    SUB_WIDTHS = 0; ROW_HEIGHT = 0;
+    titles = 0;
+    mainLayout = 0; pageNumLayout = 0;
+    pageNow = 1;
+}
+display_ui::display_ui(int r,int c,\
+                int *wids,int h,QString *tit){
+    reInit(r,c,wids,h,tit);
+}
+void display_ui::reInit(int r,int c,\
+                int *wids,int h,QString *tit){
     ITEM_COUNT = 0; displayStrs = 0;
     MAX_PAGE = 6; BEST_RANK = 3;
     LETTER_WIDTH = 7; PAGE_BUTTON_BLOCK = 4;

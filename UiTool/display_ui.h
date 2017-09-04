@@ -37,18 +37,23 @@ protected:
     QSignalMapper *mainMapper,*pageMapper;
     QVector<QWidget*> toDelete;
 public:
-    display_ui(int r,int c,int *wids,int h,QString *tit);
+    display_ui();
+    display_ui(int r,int c,int *wids,\
+               int h,QString *tit);
+    void reInit(int r,int c,int *wids,\
+                int h,QString *tit);
     ~display_ui();
     //mainBlockSet.
     QVBoxLayout *getLabelsLayout();
     //displayBlockSet.
     void display(int page = 1);
-    void setDisplay(QString **dis,int itemCon,bool memoryReleaseFlag);
+    void setDisplay(QString **dis,int itemCon,\
+                    bool memoryReleaseFlag);
     //pageNumSet.
     void pageNumDisplay(int page);
     void setPageNumLayout(int page);
-    QPushButton *getPageNumButton(int page\
-                        ,QSignalMapper *mapper,QString text = "");
+    QPushButton *getPageNumButton(int page,\
+            QSignalMapper *mapper,QString text = "");
     void setPageNum(int m,int b);
     void setPageButton(int w,int b);
     //Border
