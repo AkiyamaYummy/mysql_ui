@@ -20,7 +20,7 @@ databases_display_ui::databases_display_ui
     for(int i=0;i<=ROW_COUNT;i++){
         setRowBackground(i,(i&1)?color1:color2);
     }
-    addBorder();
+    setBorder();
     setQue();
 }
 databases_display_ui::~databases_display_ui(){
@@ -83,7 +83,8 @@ void databases_display_ui::colorInit(){
 void databases_display_ui::rowClicked(int _r){
     //qDebug() << "db dis " << (pageNow-1)*ROW_COUNT+_r-1;
     int _R = (pageNow-1)*ROW_COUNT+_r-1;
-    qDebug() << displayStrs[_R][0];
-    mainSql->use(displayStrs[_R][0]);
-
+    if(_R < itemsCon){
+        qDebug() << displayStrs[_R][0];
+        mainSql->use(displayStrs[_R][0]);
+    }
 }

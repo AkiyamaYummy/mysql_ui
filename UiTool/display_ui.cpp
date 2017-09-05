@@ -1,16 +1,7 @@
 #include "display_ui.h"
 
-/*
-    // release outside
-    QString **displayStrs,*titles;
-    // release inside
-    ExQLabel **labels;
-    QVBoxLayout *mainLayout;
-    QHBoxLayout *pageNumLayout;
-    QSignalMapper *mainMapper,*pageMapper;
-    QVector<QWidget*> toDelete;
-*/
-
+// 用于生成临时实例的构造函数
+// 请在调用该函数后调用reInit()生成真正可用的实例
 display_ui::display_ui(){
     ITEM_COUNT = 0; displayStrs = 0;
     MAX_PAGE = 6; BEST_RANK = 3;
@@ -24,10 +15,21 @@ display_ui::display_ui(){
     mainLayout = 0; pageNumLayout = 0;
     pageNow = 1;
 }
+// 构造函数
 display_ui::display_ui(int r,int c,\
                 int *wids,int h,QString *tit){
     reInit(r,c,wids,h,tit);
 }
+/*
+ * 初始化实例
+ *
+ * 参数说明:
+ * r : 展示表格的行数  c : 展示表格的列数
+ * wids : 长度为c的整数型数组，规定每列表格的宽度
+ * h : 规定每行表格的高度
+ * tit : 长度为c的QString数组，规定每列表格的标题
+ *
+ */
 void display_ui::reInit(int r,int c,\
                 int *wids,int h,QString *tit){
     ITEM_COUNT = 0; displayStrs = 0;
@@ -50,6 +52,7 @@ void display_ui::reInit(int r,int c,\
 
     display();
 }
+// 析构函数，并会释放部分参数内存
 display_ui::~display_ui(){
     clearMainLayout();
     mainLayout->deleteLater();
@@ -63,7 +66,7 @@ display_ui::~display_ui(){
         pageMapper = 0;
     }
 }
-//mainBlockSet.
+// 对表格进行初始化
 QVBoxLayout *display_ui::getLabelsLayout(){
     QVBoxLayout *res = new QVBoxLayout();
     QHBoxLayout *row;
@@ -94,6 +97,7 @@ QVBoxLayout *display_ui::getLabelsLayout(){
             ,this,SLOT(rowClickedSlot(int)));
     return res;
 }
+// 对表格部分进行析构
 void display_ui::clearMainLayout(){
     for(int i=0;i<ROW_COUNT;i++)delete[] labels[i];
     delete[] labels;
@@ -103,7 +107,7 @@ void display_ui::clearMainLayout(){
     while(mainLayout->count())
         delete mainLayout->takeAt(0);
 }
-//displayBlockSet.
+// 展示指定的页码
 void display_ui::display(int page){
     pageNumDisplay(page);
     for(int i=0;i<ROW_COUNT;i++){
@@ -119,6 +123,15 @@ void display_ui::display(int page){
         }
     }
 }
+/*
+ * 设置展示的表格内容
+ *
+ * 参数说明:
+ * dis : QString型的二维数组,第一维长度为itemCon,第二维长度为COL_COUNT
+ *       指定了用于展示的表格的内容
+ * itemCon : 指定了用于展示的信息的项目数,也就是表格的总行数
+ * memoryReleaseFlag : 指定是否要释放displayStrs的内存
+ */
 void display_ui::setDisplay(QString **dis,int itemCon,bool memoryReleaseFlag){
     if(memoryReleaseFlag && displayStrs){
         for(int i=0;i<ITEM_COUNT;i++){
@@ -131,11 +144,12 @@ void display_ui::setDisplay(QString **dis,int itemCon,bool memoryReleaseFlag){
     displayStrs = dis;
     ITEM_COUNT = itemCon;
 }
-//pageNumSet.
+// 换页时,更新底部的页码栏
 void display_ui::pageNumDisplay(int page){
     clearPageNumLayouyt();
     setPageNumLayout(page);
 }
+// 清除底部页码栏
 void display_ui::clearPageNumLayouyt(){
     for(int i=0;i<toDelete.size();i++){
         delete toDelete[i];
@@ -145,6 +159,7 @@ void display_ui::clearPageNumLayouyt(){
     while(pageNumLayout->count())
         delete pageNumLayout->takeAt(0);
 }
+// 为pageNumLayout添加相应的页码按键
 void display_ui::setPageNumLayout(int page){
     int tot = ITEM_COUNT/ROW_COUNT+(ITEM_COUNT%ROW_COUNT?1:0);
     if(tot < 1)tot = 1;
@@ -176,6 +191,7 @@ void display_ui::setPageNumLayout(int page){
     pageNumLayout->addStretch();
     connect(pageMapper,SIGNAL(mapped(int)),this,SLOT(displaySlot(int)));
 }
+// 获得指定页码的页码按键
 QPushButton *display_ui::getPageNumButton(int page,QSignalMapper *mapper,\
                               QString text){
     if(!text.length())text = QString::number(page);
@@ -190,14 +206,23 @@ QPushButton *display_ui::getPageNumButton(int page,QSignalMapper *mapper,\
     toDelete.push_back(res);
     return res;
 }
+// 设定页码按键的最大个数,以及当前页码出现的最佳位置
 void display_ui::setPageNum(int m,int b){
     MAX_PAGE = m; BEST_RANK = b;
 }
+// 设定与页码按键宽度相关的参数
 void display_ui::setPageButton(int w,int b){
     LETTER_WIDTH = w; PAGE_BUTTON_BLOCK = b;
 }
-//Border
-void display_ui::addBorder(int m,int e,QString c){
+/*
+ * 设置边框粗细和颜色
+ *
+ * 参数介绍 :
+ * m : 中间部分的边框粗细程度
+ * e : 表格边缘部分的边框粗细程度
+ * c : 表格边框颜色
+ */
+void display_ui::setBorder(int m,int e,QString c){
     MID_BORDER = m; EDGE_BORDER = e;
     BORDER_COLOR = c;
     for(int i=0;i<=ROW_COUNT;i++)
@@ -207,6 +232,7 @@ void display_ui::addBorder(int m,int e,QString c){
             labels[i][j].setStyleSheet(ss);
         }
 }
+// 相应位置的label,其边框的部分的styleSheet,用于设置styleSheet
 QString display_ui::getBorderStr(int x,int y){
     int l,r,t,b;
     l = t = 0; r = b = MID_BORDER;
@@ -225,16 +251,19 @@ QString display_ui::getBorderStr(int x,int y){
                .arg(r).arg(BORDER_COLOR));
     return res;
 }
+// 设置某一行的文字字体
 void display_ui::setRowFont(int r,QFont &f){
     for(int c=0;c<COL_COUNT;c++){
         labels[r][c].setFont(f);
     }
 }
+// 设置某一列的文字字体
 void display_ui::setColFont(int c,QFont &f){
     for(int r=0;r<=ROW_COUNT;r++){
         labels[r][c].setFont(f);
     }
 }
+// 设置某一行的背景颜色
 void display_ui::setRowBackground(int r,QString color){
     for(int c=0;c<COL_COUNT;c++){
         QString ss = labels[r][c].styleSheet();
@@ -242,6 +271,7 @@ void display_ui::setRowBackground(int r,QString color){
         labels[r][c].setStyleSheet(ss);
     }
 }
+// 设置某一列的背景颜色
 void display_ui::setColBackground(int c,QString color){
     for(int r=0;r<ROW_COUNT;r++){
         QString ss = labels[r][c].styleSheet();
@@ -249,15 +279,14 @@ void display_ui::setColBackground(int c,QString color){
         labels[r][c].setStyleSheet(ss);
     }
 }
+// 辅助用的槽
 void display_ui::rowClickedSlot(int _r){
     this->rowClicked(_r);
-}
-void display_ui::rowClicked(int _r){
-    qDebug() << "dis " << _r;
 }
 void display_ui::displaySlot(int page){
     display(page);
 }
-int display_ui::getCol(){
-    return COL_COUNT;
+// 点击当前表格展示的第_r行的时候,会执行此函数,一般用于在子类中被重写
+void display_ui::rowClicked(int _r){
+    qDebug() << "dis " << _r;
 }
